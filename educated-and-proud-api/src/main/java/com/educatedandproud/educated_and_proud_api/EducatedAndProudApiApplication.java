@@ -1,4 +1,4 @@
-package com.example.educated_and_proud_api;
+package com.educatedandproud.educated_and_proud_api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
