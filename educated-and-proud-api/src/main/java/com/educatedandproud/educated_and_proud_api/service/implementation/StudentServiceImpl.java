@@ -1,6 +1,11 @@
 package com.educatedandproud.educated_and_proud_api.service.implementation;
 
+import com.educatedandproud.educated_and_proud_api.dto.StudentRequest;
+import com.educatedandproud.educated_and_proud_api.dto.StudentResponse;
+import com.educatedandproud.educated_and_proud_api.dto.StudentUpdateRequest;
+import com.educatedandproud.educated_and_proud_api.exception.DuplicateEmailException;
 import com.educatedandproud.educated_and_proud_api.exception.StudentNotFoundException;
+import com.educatedandproud.educated_and_proud_api.mapper.StudentMapper;
 import com.educatedandproud.educated_and_proud_api.model.Student;
 import com.educatedandproud.educated_and_proud_api.repository.StudentRepository;
 import com.educatedandproud.educated_and_proud_api.service.StudentService;
@@ -15,35 +20,41 @@ import java.util.Optional;
 public class StudentServiceImpl implements StudentService {
 
     private final StudentRepository studentRepository;
+    private final StudentMapper studentMapper;
 
     @Override
-    public Student createStudent(Student student) {
-        return studentRepository.save(student);
+    public StudentResponse createStudent(StudentRequest studentRequest) {
+        if (studentRepository.existsByEmail(studentRequest.email())) {
+            throw new DuplicateEmailException(studentRequest.email());
+        }
+        Student saved = studentRepository.save(studentMapper.toEntity(studentRequest));
+        return studentMapper.toResponse(saved);
     }
 
     @Override
-    public Optional<Student> getStudentById(Long id) {
-        return studentRepository.findById(id);
+    public Optional<StudentResponse> getStudentById(Long id) {
+        return studentRepository.findById(id).map(studentMapper::toResponse);
     }
 
     @Override
-    public List<Student> getAllStudents() {
-        return studentRepository.findAll();
+    public List<StudentResponse> getAllStudents() {
+        return studentRepository.findAll().stream()
+                .map(studentMapper::toResponse)
+                .toList();
     }
 
     @Override
-    public Student updateStudent(Long id, Student student) {
+    public StudentResponse updateStudent(Long id, StudentUpdateRequest studentUpdateRequest) {
         Student existingStudent = studentRepository.findById(id)
                 .orElseThrow(() -> new StudentNotFoundException(id));
 
-        existingStudent.setEmail(student.getEmail());
-        existingStudent.setSchoolAttending(student.getSchoolAttending());
-        existingStudent.setSchoolTransferringTo(student.getSchoolTransferringTo());
-        existingStudent.setEstimatedGradYear(student.getEstimatedGradYear());
-        existingStudent.setMajor(student.getMajor());
+        boolean emailChanged = !existingStudent.getEmail().equalsIgnoreCase(studentUpdateRequest.email());
+        if (emailChanged && studentRepository.existsByEmail(studentUpdateRequest.email())) {
+            throw new DuplicateEmailException(studentUpdateRequest.email());
+        }
 
-        return studentRepository.save(existingStudent);
-
+        studentMapper.updateEntity(existingStudent, studentUpdateRequest);
+        return studentMapper.toResponse(studentRepository.save(existingStudent));
     }
 
     @Override

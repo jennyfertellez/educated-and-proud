@@ -1,7 +1,10 @@
 package com.educatedandproud.educated_and_proud_api.controller;
 
-import com.educatedandproud.educated_and_proud_api.model.Student;
+import com.educatedandproud.educated_and_proud_api.dto.StudentRequest;
+import com.educatedandproud.educated_and_proud_api.dto.StudentResponse;
+import com.educatedandproud.educated_and_proud_api.dto.StudentUpdateRequest;
 import com.educatedandproud.educated_and_proud_api.service.StudentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,25 +19,26 @@ public class StudentController {
     private final StudentService studentService;
 
     @PostMapping
-    public ResponseEntity<Student> createStudent(@RequestBody Student student) {
-        return ResponseEntity.ok(studentService.createStudent(student));
+    public ResponseEntity<StudentResponse> createStudent(@Valid @RequestBody StudentRequest studentRequest) {
+        return ResponseEntity.ok(studentService.createStudent(studentRequest));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Student> getStudentById(@PathVariable Long id) {
+    public ResponseEntity<StudentResponse> getStudentById(@PathVariable Long id) {
         return studentService.getStudentById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping
-    public ResponseEntity<List<Student>> getStudents() {
+    public ResponseEntity<List<StudentResponse>> getStudents() {
         return ResponseEntity.ok(studentService.getAllStudents());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Student> updateStudent(@PathVariable Long id, @RequestBody Student student) {
-        return ResponseEntity.ok(studentService.updateStudent(id, student));
+    public ResponseEntity<StudentResponse> updateStudent(@PathVariable Long id,
+                                                         @Valid @RequestBody StudentUpdateRequest studentUpdateRequest) {
+        return ResponseEntity.ok(studentService.updateStudent(id, studentUpdateRequest));
     }
 
     @DeleteMapping("/{id}")
