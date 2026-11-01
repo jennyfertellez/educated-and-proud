@@ -1,5 +1,6 @@
 package com.educatedandproud.educated_and_proud_api.service.implementation;
 
+import com.educatedandproud.educated_and_proud_api.exception.StudentNotFoundException;
 import com.educatedandproud.educated_and_proud_api.model.Student;
 import com.educatedandproud.educated_and_proud_api.repository.StudentRepository;
 import com.educatedandproud.educated_and_proud_api.service.StudentService;
@@ -33,7 +34,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public Student updateStudent(Long id, Student student) {
         Student existingStudent = studentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
+                .orElseThrow(() -> new StudentNotFoundException(id));
 
         existingStudent.setEmail(student.getEmail());
         existingStudent.setSchoolAttending(student.getSchoolAttending());
@@ -47,6 +48,8 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public void deleteStudent(Long id) {
+        studentRepository.findById(id)
+                .orElseThrow(() -> new StudentNotFoundException(id));
         studentRepository.deleteById(id);
     }
 }
