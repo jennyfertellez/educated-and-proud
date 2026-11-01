@@ -1,17 +1,13 @@
 package com.educatedandproud.educated_and_proud_api.service;
 
 import com.educatedandproud.educated_and_proud_api.model.Student;
-import com.educatedandproud.educated_and_proud_api.repository.StudentRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.Optional;
 
-@Service
-@RequiredArgsConstructor
-public class StudentService {
-
-    private final StudentRepository studentRepository;
-
-    public Student createStudent(Student student) {
-        return studentRepository.save(student);
-    }
+public interface StudentService {
+    Student createStudent(Student student);
+    Optional<Student> getStudentById(Long id);
+    List<Student> getAllStudents();
+    Student updateStudent(Long id, Student student);
+    void deleteStudent(Long id);
 }
