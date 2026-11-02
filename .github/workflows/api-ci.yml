@@ -1,0 +1,52 @@
+name: API CI - Build and Test
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'educated-and-proud-api/**'
+      - '.github/workflows/api-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'educated-and-proud-api/**'
+      - '.github/workflows/api-ci.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: educated-and-proud-api
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build and Test
+        run: ./mvnw -B verify
+
+      - name: Generate JaCoCo Badge
+        if: github.event_name == 'push'
+        uses: cicirello/jacoco-badge-generator@v2
+        with:
+          generate-branches-badge: true
+          jacoco-csv-file: educated-and-proud-api/target/site/jacoco/jacoco.csv
+          badges-directory: educated-and-proud-api/.github/badges
+
+      - name: Commit and Push Badge
+        if: github.event_name == 'push'
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: 'ci: update coverage badge'
+          add: 'educated-and-proud-api/.github/badges/*.svg'
